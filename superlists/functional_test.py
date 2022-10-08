@@ -1,5 +1,5 @@
 from selenium import webdriver
-from selenium.webdriver.common import keys
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 import time
 import unittest
@@ -30,21 +30,28 @@ class NewVisitorTest(unittest.TestCase):
         self.assertEqual(inputbox.get_attribute('placeholder'), 'Enter a to-do ')
 
         #Наше первое дело это учить ЯП Python
-        inputbox.send_keys('Учить python')
+        inputbox.send_keys('Учить Python')
 
         #Мы пишем его и нажимаем Enter
-        inputbox.send_keys(keys.Enter)
+        inputbox.send_keys(Keys.ENTER)
         time.sleep(1)
 
         #Теперь в списке появился пункт под номером 1 'Учить Python'
         table = self.browser.find_element(by=By.ID, value='id_list_table')
         rows = table.find_elements(by=By.TAG_NAME, value='tr')
-        self.assertTrue(any(row.text == '1: Учить Python' for row in rows))
+        self.assertIn('1: Учить Python', [row.text for row in rows])
 
         #Текстовое поле все еще предлагает добавлять дела в список
-        self.fail()
+        inputbox = self.browser.find_element(by=By.ID, value='id_new_item')
         #Добавляем 'Тренировки на турнике'
+        inputbox.send_keys('Тренировки на турнике')
+        inputbox.send_keys(Keys.ENTER)
         #Страница обновляется и теперь в списке два наших дела
+        table = self.browser.find_element(by=By.ID, value='id_list_table')
+        rows = table.find_elements(by=By.TAG_NAME, value='tr')
+        self.assertIn('1: Учить Python', [row.text for row in rows])
+        self.assertIn('2: Тренировки на турнике', [row.text for row in rows])
+        self.fail()
         #Нам интересно, сохраняется ли наш список
         #Сайт генерирует для нас уникальный URL, и выводит для нас небольшой текст с объяснениями
         #Посещаем данный URL и видим что список на месте
