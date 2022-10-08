@@ -1,4 +1,7 @@
 from selenium import webdriver
+from selenium.webdriver.common import keys
+from selenium.webdriver.common.by import By
+import time
 import unittest
 
 
@@ -19,13 +22,27 @@ class NewVisitorTest(unittest.TestCase):
 
         #Его заголовок гласит нам To-Do list
         self.assertIn('To-Do', self.browser.title)
-        self.fail('Закончить тест')
+        header_text = self.browser.find_element(by=By.TAG_NAME, value='h1').text
+        self.assertIn('To-Do', header_text)
 
         #Здесь нам предлагается начать вести свой список дел
+        inputbox = self.browser.find_element(by=By.ID, value='id_new_item')
+        self.assertEqual(inputbox.get_attribute('placeholder'), 'Enter a to-do ')
+
         #Наше первое дело это учить ЯП Python
+        inputbox.send_keys('Учить python')
+
         #Мы пишем его и нажимаем Enter
+        inputbox.send_keys(keys.Enter)
+        time.sleep(1)
+
         #Теперь в списке появился пункт под номером 1 'Учить Python'
+        table = self.browser.find_element(by=By.ID, value='id_list_table')
+        rows = table.find_elements(by=By.TAG_NAME, value='tr')
+        self.assertTrue(any(row.text == '1: Учить Python' for row in rows))
+
         #Текстовое поле все еще предлагает добавлять дела в список
+        self.fail()
         #Добавляем 'Тренировки на турнике'
         #Страница обновляется и теперь в списке два наших дела
         #Нам интересно, сохраняется ли наш список
