@@ -14,6 +14,12 @@ class NewVisitorTest(unittest.TestCase):
     def tearDown(self) -> None:
         self.browser.quit()
 
+    def check_text_in_rows_list_table(self, text_row):
+        '''проверка на наличие текста в строках таблицы'''
+        table = self.browser.find_element(by=By.ID, value='id_list_table')
+        rows = table.find_elements(by=By.TAG_NAME, value='tr')
+        self.assertIn(text_row, [row.text for row in rows])
+
     def test_can_start_a_list_and_retrieve_at_later(self):
         '''тест: можно начать список и получить его позже'''
         #Нам необходимо онлайн приложение для списка дел
@@ -37,9 +43,7 @@ class NewVisitorTest(unittest.TestCase):
         time.sleep(1)
 
         #Теперь в списке появился пункт под номером 1 'Учить Python'
-        table = self.browser.find_element(by=By.ID, value='id_list_table')
-        rows = table.find_elements(by=By.TAG_NAME, value='tr')
-        self.assertIn('1: Учить Python', [row.text for row in rows])
+        self.check_text_in_rows_list_table('1: Учить Python')
 
         #Текстовое поле все еще предлагает добавлять дела в список
         inputbox = self.browser.find_element(by=By.ID, value='id_new_item')
@@ -47,10 +51,8 @@ class NewVisitorTest(unittest.TestCase):
         inputbox.send_keys('Тренировки на турнике')
         inputbox.send_keys(Keys.ENTER)
         #Страница обновляется и теперь в списке два наших дела
-        table = self.browser.find_element(by=By.ID, value='id_list_table')
-        rows = table.find_elements(by=By.TAG_NAME, value='tr')
-        self.assertIn('1: Учить Python', [row.text for row in rows])
-        self.assertIn('2: Тренировки на турнике', [row.text for row in rows])
+        self.check_text_in_rows_list_table('1: Учить Python')
+        self.check_text_in_rows_list_table('2: Тренировки на турнике')
         self.fail()
         #Нам интересно, сохраняется ли наш список
         #Сайт генерирует для нас уникальный URL, и выводит для нас небольшой текст с объяснениями
