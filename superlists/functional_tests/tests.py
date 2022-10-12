@@ -1,11 +1,11 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+from django.test import LiveServerTestCase
 import time
-import unittest
 
 
-class NewVisitorTest(unittest.TestCase):
+class NewVisitorTest(LiveServerTestCase):
     '''Тест нового посетителя'''
 
     def setUp(self) -> None:
@@ -24,7 +24,7 @@ class NewVisitorTest(unittest.TestCase):
         '''тест: можно начать список и получить его позже'''
         #Нам необходимо онлайн приложение для списка дел
         #Заходим на него
-        self.browser.get('http://localhost:8000')
+        self.browser.get(self.live_server_url)
 
         #Его заголовок гласит нам To-Do list
         self.assertIn('To-Do', self.browser.title)
@@ -59,6 +59,3 @@ class NewVisitorTest(unittest.TestCase):
         #Посещаем данный URL и видим что список на месте
         #Закрываем сайт
 
-
-if __name__ == '__main__':
-    unittest.main(warnings='ignore')
