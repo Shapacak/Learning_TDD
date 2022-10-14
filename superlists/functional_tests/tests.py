@@ -1,8 +1,12 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import WebDriverException
 from django.test import LiveServerTestCase
 import time
+
+
+MAX_WAIT = 10
 
 
 class NewVisitorTest(LiveServerTestCase):
@@ -14,14 +18,30 @@ class NewVisitorTest(LiveServerTestCase):
     def tearDown(self) -> None:
         self.browser.quit()
 
-    def check_text_in_rows_list_table(self, text_row):
+    def wait_for_row_in_list_table(self, text_row):
         '''проверка на наличие текста в строках таблицы'''
-        table = self.browser.find_element(by=By.ID, value='id_list_table')
-        rows = table.find_elements(by=By.TAG_NAME, value='tr')
-        self.assertIn(text_row, [row.text for row in rows])
+        start_time = time.time()
 
-    def test_can_start_a_list_and_retrieve_at_later(self):
-        '''тест: можно начать список и получить его позже'''
+        while True:
+            try:
+                table = self.browser.find_element(by=By.ID, value='id_list_table')
+                rows = table.find_elements(by=By.TAG_NAME, value='tr')
+                self.assertIn(text_row, [row.text for row in rows])
+                return
+            except (AssertionError, WebDriverException) as e:
+                if time.time() - start_time > MAX_WAIT:
+                    raise e
+                time.sleep(0.5)
+
+    def input_box(self, text):
+        '''вводим текст в поле ввода'''
+
+        inputbox = self.browser.find_element(by=By.ID, value='id_new_item')
+        inputbox.send_keys(text)
+        inputbox.send_keys(Keys.ENTER)
+
+    def test_can_start_a_list_for_one_user(self):
+        '''тест: можно начать список для одного пользователя'''
         #Нам необходимо онлайн приложение для списка дел
         #Заходим на него
         self.browser.get(self.live_server_url)
@@ -36,26 +56,62 @@ class NewVisitorTest(LiveServerTestCase):
         self.assertEqual(inputbox.get_attribute('placeholder'), 'Enter a to-do ')
 
         #Наше первое дело это учить ЯП Python
-        inputbox.send_keys('Учить Python')
-
         #Мы пишем его и нажимаем Enter
-        inputbox.send_keys(Keys.ENTER)
-        time.sleep(1)
+        self.input_box('Учить Python')
 
         #Теперь в списке появился пункт под номером 1 'Учить Python'
-        self.check_text_in_rows_list_table('1: Учить Python')
+        self.wait_for_row_in_list_table('1: Учить Python')
 
         #Текстовое поле все еще предлагает добавлять дела в список
-        inputbox = self.browser.find_element(by=By.ID, value='id_new_item')
         #Добавляем 'Тренировки на турнике'
-        inputbox.send_keys('Тренировки на турнике')
-        inputbox.send_keys(Keys.ENTER)
+        self.input_box('Тренировки на турнике')
+
         #Страница обновляется и теперь в списке два наших дела
-        self.check_text_in_rows_list_table('1: Учить Python')
-        self.check_text_in_rows_list_table('2: Тренировки на турнике')
-        self.fail()
+        self.wait_for_row_in_list_table('1: Учить Python')
+        self.wait_for_row_in_list_table('2: Тренировки на турнике')
         #Нам интересно, сохраняется ли наш список
         #Сайт генерирует для нас уникальный URL, и выводит для нас небольшой текст с объяснениями
         #Посещаем данный URL и видим что список на месте
         #Закрываем сайт
 
+    def test_multiple_users_can_start_list_at_different_url(self):
+        '''тест: многочисленные пользователи могут начать списки по разным url'''
+        #Я хочу начать новый список
+        self.browser.get(self.live_server_url)
+        self.input_box('Учить Python')
+        self.wait_for_row_in_list_table('1: Учить Python')
+        my_url = self.browser.current_url
+
+        #Я вижу что мой список имеет уникальный url
+        self.assertRegex(my_url, '/list/.+')
+
+        #Теперь новый пользователь приходит на сайт
+
+        ##Мы используем новый сеанс браузера, тем самым обеспечивая, что бы никакая информация
+        ##других пользователей не прошла через cookie и пр.
+
+        self.browser.quit()
+        self.browser = webdriver.Chrome('../chromedriver/chromedriver.exe')
+
+        #Он посещает домашнюю страницу и не видит там списков от других пользователей
+        self.browser.get('/')
+        page_text = self.browser.find_element(by=By.TAG_NAME, value='body').text
+        self.assertNotIn('Учить Python', page_text)
+        self.assertNotIn('Тренировки на турнике', page_text)
+
+        #Теперь он начинает свой собственный список
+        self.input_box('Купить молоко')
+        self.wait_for_row_in_list_table('Купить молоко')
+
+        #Получает свой собственный уникальный url, и он отличается от нашего
+        other_url = self.browser.current_url
+        self.assertRegex(other_url, '/list/.+')
+        self.assertNotEqual(my_url, other_url)
+
+        #И опять таки ни одного пункта из моего списка
+        page_text = self.browser.find_element(by=By.TAG_NAME, value='body').text
+        self.assertNotIn('Учить Python', page_text)
+        self.assertNotIn('Тренировки на турнике', page_text)
+        self.assertIn('Купить молоко', page_text)
+
+        #И мы оба довольные идем спать
