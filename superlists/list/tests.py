@@ -14,10 +14,14 @@ class HomePageTest(TestCase):
         response = self.client.get('/')
         self.assertTemplateUsed(response, 'home.html')
 
+
+class NewListTest(TestCase):
+    '''тест нового списка'''
+
     def test_can_save_a_POST_request(self):
         '''тест: можно сохранить POST-запрос'''
 
-        response = self.client.post('/', data={'item_text':'A new list item'})
+        response = self.client.post('/list/new', data={'item_text': 'A new list item'})
 
         self.assertEqual(Item.objects.count(),1)
         new_item = Item.objects.first()
@@ -26,24 +30,27 @@ class HomePageTest(TestCase):
     def test_redirect_after_POST(self):
         '''тест: переадресация после post-запроса'''
 
-        response = self.client.post('/', data={'item_text': 'A new list item'})
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['location'], '/')
+        response = self.client.post('/list/new', data={'item_text': 'A new list item'})
+        self.assertRedirects(response, '/list/imba_list/')
 
-    def test_only_saves_items_when_necessary(self):
-        '''тест: сохраненяет элементы только когда нужно'''
 
-        self.client.get('/')
-        self.assertEqual(Item.objects.count(), 0)
+class ListViewTest(TestCase):
+    '''тест представления списка'''
+
+    def test_uses_list_template(self):
+        '''тест: используется шаблон списка'''
+
+        response = self.client.get('/list/imba_list/')
+        self.assertTemplateUsed(response, 'list.html')
 
     def test_display_all_list_items(self):
         '''тест: просмотр всех элементов списка'''
 
         item_1 = Item.objects.create(text='item 1')
         item_2 = Item.objects.create(text='item 2')
-        response = self.client.get('/')
-        self.assertIn('item 1', response.content.decode('utf-8'))
-        self.assertIn('item 2', response.content.decode('utf-8'))
+        response = self.client.get('/list/imba_list/')
+        self.assertContains(response, 'item 1')
+        self.assertContains(response, 'item 1')
 
 
 class ItemModelTest(TestCase):
