@@ -21,5 +21,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home_page),
     path('list/new', views.list_new),
-    path('list/imba_list/', views.view_list)
+    path('list/<int:id>/', views.view_list),
+    path('list/<int:id>/add_item', views.add_item),
 ]

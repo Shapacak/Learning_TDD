@@ -83,7 +83,7 @@ class NewVisitorTest(LiveServerTestCase):
         my_url = self.browser.current_url
 
         #Я вижу что мой список имеет уникальный url
-        self.assertRegex(my_url, '/list/.+')
+        self.assertRegex(my_url, '/list/.+/')
 
         #Теперь новый пользователь приходит на сайт
 
@@ -94,24 +94,24 @@ class NewVisitorTest(LiveServerTestCase):
         self.browser = webdriver.Chrome('../chromedriver/chromedriver.exe')
 
         #Он посещает домашнюю страницу и не видит там списков от других пользователей
-        self.browser.get('/')
+        self.browser.get(self.live_server_url)
         page_text = self.browser.find_element(by=By.TAG_NAME, value='body').text
-        self.assertNotIn('Учить Python', page_text)
-        self.assertNotIn('Тренировки на турнике', page_text)
+        self.assertNotIn('1: Учить Python', page_text)
+        self.assertNotIn('2: Тренировки на турнике', page_text)
 
         #Теперь он начинает свой собственный список
         self.input_box('Купить молоко')
-        self.wait_for_row_in_list_table('Купить молоко')
+        self.wait_for_row_in_list_table('1: Купить молоко')
 
         #Получает свой собственный уникальный url, и он отличается от нашего
         other_url = self.browser.current_url
-        self.assertRegex(other_url, '/list/.+')
+        self.assertRegex(other_url, '/list/.+/')
         self.assertNotEqual(my_url, other_url)
 
         #И опять таки ни одного пункта из моего списка
         page_text = self.browser.find_element(by=By.TAG_NAME, value='body').text
-        self.assertNotIn('Учить Python', page_text)
-        self.assertNotIn('Тренировки на турнике', page_text)
-        self.assertIn('Купить молоко', page_text)
+        self.assertNotIn('1:Учить Python', page_text)
+        self.assertNotIn('2: Тренировки на турнике', page_text)
+        self.assertIn('1: Купить молоко', page_text)
 
         #И мы оба довольные идем спать
