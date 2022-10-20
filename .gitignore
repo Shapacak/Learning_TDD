@@ -1,4 +1,5 @@
 /superlists/db.sqlite3
+/superlists/list/static/bootstrap
 /chromedriver/
 /venv/
 __pycache__
