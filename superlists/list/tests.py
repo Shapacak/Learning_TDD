@@ -31,7 +31,7 @@ class NewListTest(TestCase):
         '''тест: переадресация после post-запроса'''
 
         response = self.client.post('/list/new', data={'item_text': 'A new list item'})
-        new_list = Lists.objects.first()
+        new_list = List.objects.first()
         self.assertRedirects(response, f'/list/{new_list.id}/')
 
 
