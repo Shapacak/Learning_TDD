@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from list.models import Item
+from list.models import Item, Lists
 
 
 def home_page(request):
@@ -8,7 +8,8 @@ def home_page(request):
 
 
 def list_new(request):
-    Item.objects.create(text=request.POST.get('item_text'))
+    list_ = Lists.objects.create()
+    Item.objects.create(text=request.POST.get('item_text'), list=list_)
     return redirect('imba_list/')
 
 
