@@ -53,7 +53,7 @@ class NewVisitorTest(LiveServerTestCase):
 
         #Здесь нам предлагается начать вести свой список дел
         inputbox = self.browser.find_element(by=By.ID, value='id_new_item')
-        self.assertEqual(inputbox.get_attribute('placeholder'), 'Enter a to-do ')
+        self.assertEqual(inputbox.get_attribute('placeholder'), 'Enter a to-do')
 
         #Наше первое дело это учить ЯП Python
         #Мы пишем его и нажимаем Enter
