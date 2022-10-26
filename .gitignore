@@ -1,6 +1,0 @@
-/superlists/db.sqlite3
-**/static
-/chromedriver/
-/venv/
-__pycache__
-*.pyc
