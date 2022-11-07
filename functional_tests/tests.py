@@ -1,5 +1,5 @@
 import os
-from .config import config
+from config import config
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
@@ -15,10 +15,11 @@ class NewVisitorTest(StaticLiveServerTestCase):
     '''Тест нового посетителя'''
 
     def setUp(self) -> None:
-        self.browser = webdriver.Chrome('../chromedriver/chromedriver.exe')
+        self.browser = webdriver.Chrome('./chromedriver/chromedriver.exe')
         staging_server = os.environ.get('STAGING_SERVER')
         if staging_server:
             self.live_server_url = 'http://' + staging_server
+        print(staging_server)
 
     def tearDown(self) -> None:
         self.browser.quit()
@@ -50,7 +51,7 @@ class NewVisitorTest(StaticLiveServerTestCase):
         #Нам необходимо онлайн приложение для списка дел
         #Заходим на него
         self.browser.get(self.live_server_url)
-
+        print(self.browser.current_url)
         #Его заголовок гласит нам To-Do list
         self.assertIn('To-Do', self.browser.title)
         header_text = self.browser.find_element(by=By.TAG_NAME, value='h1').text
@@ -96,7 +97,7 @@ class NewVisitorTest(StaticLiveServerTestCase):
         ##других пользователей не прошла через cookie и пр.
 
         self.browser.quit()
-        self.browser = webdriver.Chrome('../chromedriver/chromedriver.exe')
+        self.browser = webdriver.Chrome('./chromedriver/chromedriver.exe')
 
         #Он посещает домашнюю страницу и не видит там списков от других пользователей
         self.browser.get(self.live_server_url)
