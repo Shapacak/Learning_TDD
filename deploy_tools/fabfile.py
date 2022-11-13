@@ -13,7 +13,7 @@ def deploy():
     _create_directory_structure_if_necessary(site_folder)
     _get_latest_source(source_folder)
     _update_settings(source_folder, env.host)
-    _update_venv(source_folder)
+    _update_venv(site_folder)
     _update_static_files(source_folder)
     _update_database(source_folder)
 
@@ -31,7 +31,7 @@ def _get_latest_source(source_folder):
     else:
         run(f'git clone {REPO_URL} {source_folder}')
     current_commit = local('git log -n 1 --format=%H%', capture=True)
-    run(f'cd {source_folder} && git reset --hard {current_commit}')
+    run(f'cd {source_folder} && git reset --hard {current_commit[0:9]}')
 
 
 def _update_settings(source_folder, site_name):
@@ -50,12 +50,12 @@ def _update_settings(source_folder, site_name):
     append(settings_path, '\nfrom .secret_key import SECRET_KEY')
 
 
-def _update_venv(source_folder):
+def _update_venv(site_folder):
     '''обновелние виртуального окружения python'''
-    venv_folder = source_folder + '../venv'
+    venv_folder = site_folder + '/venv'
     if not exists(venv_folder + '/bin/pip'):
         run(f'python3 -m venv {venv_folder}')
-    run(f'{venv_folder}/bin/pip install -r {source_folder}/requirements.txt')
+    run(f'{venv_folder}/bin/pip install -r {site_folder}/source/requirements.txt')
 
 
 def _update_static_files(source_folder):
