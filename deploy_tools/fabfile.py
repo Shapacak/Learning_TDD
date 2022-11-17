@@ -5,11 +5,6 @@ import random
 
 REPO_URL = 'https://github.com/Shapacak/Learning_TDD.git'
 
-def test(folder):
-    print(env.user)
-    print(env.host)
-    print(folder)
-
 def deploy(folder):
     '''развернуть'''
     site_folder = f'/home/sites/{folder}'
