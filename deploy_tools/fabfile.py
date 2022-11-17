@@ -5,10 +5,14 @@ import random
 
 REPO_URL = 'https://github.com/Shapacak/Learning_TDD.git'
 
+def test(folder):
+    print(env.user)
+    print(env.host)
+    print(folder)
 
-def deploy():
+def deploy(folder):
     '''развернуть'''
-    site_folder = f'/home/sites/{env.host}'
+    site_folder = f'/home/sites/{folder}'
     source_folder = site_folder + '/source'
     _create_directory_structure_if_necessary(site_folder)
     _get_latest_source(source_folder)
@@ -42,13 +46,11 @@ def _update_settings(source_folder, site_name):
         'ALLOWED_HOSTS =.+$',
         f'ALLOWED_HOSTS = ["{site_name}"]')
     sed(settings_path,
-        'SECRET_KEY =.+$', '')
+        'SECRET_KEY =.+$', 'from .secret_key import SECRET_KEY')
     secret_key_file = source_folder + '/superlist/secret_key.py'
     chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
     key = ''.join(random.SystemRandom().choice(chars) for _ in range(50))
     append(secret_key_file, f'SECRET_KEY = "django-insecure-{key}"')
-    append(settings_path, '\nfrom .secret_key import SECRET_KEY')
-
 
 def _update_venv(site_folder):
     '''обновелние виртуального окружения python'''
