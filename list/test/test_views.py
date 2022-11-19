@@ -110,3 +110,13 @@ class ListViewTest(TestCase):
 
         response = self.client.post(f'/list/{correct_list.id}/', data={'item_text':'Few item'})
         self.assertRedirects(response, f'/list/{correct_list.id}/')
+
+    def test_validation_errors_end_up_lists_page(self):
+        '''тест: ошибки валидации оканчиваются на странице списков'''
+
+        list_ = List.objects.create()
+        response = self.client.post(f'/list/{list_.id}/', data={'item_text': ''})
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'list.html')
+        error_message = 'Сначала введите текст'
+        self.assertContains(response, error_message)

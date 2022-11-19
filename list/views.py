@@ -26,8 +26,14 @@ def list_new(request):
 def view_list(request, id):
     '''просмотр конкретного списка'''
     list_ = List.objects.get(id=id)
+    error = ''
     if request.method == 'POST':
-        Item.objects.create(text=request.POST['item_text'], list=list_)
-        return redirect(f'/list/{list_.id}/')
-    return render(request, 'list.html', {'list': list_})
+        try:
+            item = Item(text=request.POST['item_text'], list=list_)
+            item.full_clean()
+            item.save()
+            return redirect(f'/list/{list_.id}/')
+        except ValidationError:
+            error = 'Сначала введите текст'
+    return render(request, 'list.html', {'list': list_, 'error': error})
 
