@@ -1,9 +1,19 @@
 from django.test import TestCase
+from django.core.exceptions import ValidationError
 from list.models import List, Item
 
 
 class ListAndItemModelsTests(TestCase):
     '''Тестируем модель элемента списка'''
+
+    def test_cannot_save_empty_list_item(self):
+        '''тест: нельзя сохранить пустой элемент'''
+        list_ = List()
+        list_.save()
+        item = Item(list=list_, text='')
+        with self.assertRaises(ValidationError):
+            item.save()
+            item.full_clean()
 
     def test_saving_and_retrieving_items(self):
         '''тест сохранения и получения списка'''

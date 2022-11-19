@@ -60,6 +60,21 @@ class NewItemTest(TestCase):
         response = self.client.post(f'/list/{correct_list.id}/add_item', data={'item_text':'Few item'})
         self.assertRedirects(response, f'/list/{correct_list.id}/')
 
+    def test_validation_error_are_sent_back_to_home_page_template(self):
+        '''тест: ошибки возвращают на главную страницу'''
+        response = self.client.post('/list/new', data={'item_text': ''})
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'home.html')
+        expected_error = 'Сначала введите текст'
+        self.assertContains(response, expected_error)
+
+    def test_invalid_list_item_ared_saved(self):
+        '''тест: сохраняются ли недопустимые элементы списка'''
+        self.client.post('/list/new', data={'item_text': ''})
+        self.assertEqual(List.objects.count(), 0)
+        self.assertEqual(Item.objects.count(), 0)
+
+
 class ListViewTest(TestCase):
     '''тест представления списка'''
 
