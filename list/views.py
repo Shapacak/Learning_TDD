@@ -20,7 +20,7 @@ def list_new(request):
         list_.delete()
         error = 'Сначала введите текст'
         return render(request, 'home.html', {'error': error})
-    return redirect(f'/list/{list_.id}/')
+    return redirect(list_)
 
 
 def view_list(request, id):
@@ -32,7 +32,7 @@ def view_list(request, id):
             item = Item(text=request.POST['item_text'], list=list_)
             item.full_clean()
             item.save()
-            return redirect(f'/list/{list_.id}/')
+            return redirect(list_)
         except ValidationError:
             error = 'Сначала введите текст'
     return render(request, 'list.html', {'list': list_, 'error': error})
