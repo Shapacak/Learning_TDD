@@ -2,11 +2,12 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.core.exceptions import ValidationError
 from list.models import Item, List
+from list.forms import ItemForm
 
 
 def home_page(request):
     '''домашняя страница'''
-    return render(request, 'home.html')
+    return render(request, 'home.html', {'form': ItemForm()})
 
 
 def list_new(request):

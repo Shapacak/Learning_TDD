@@ -12,10 +12,9 @@
             <div class="col-6 col-offset-3 jumbotron">
                 <div class="text-center">
                     <h1 class="display-4">{% block title %}{% endblock title %}</h1>
-                    <form method="post" action="{% block action %}{% endblock action %}">
-                        <input name="item_text" id="id_new_item" class="form-control form-control-lg"
-                               placeholder="Enter a to-do" />
-                    {% csrf_token %}
+                    <form method="post" action="{% block form_action %}{% endblock form_action %}">
+                        {{ form.text }}
+                        {% csrf_token %}
                         {% if error %}
                             <div class="form-group has-error">
                                 <span class="help-block">

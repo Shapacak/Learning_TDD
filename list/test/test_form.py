@@ -22,3 +22,8 @@ class ItemFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors['text'],
                          [EMPTY_ITEM_ERROR])
+
+    def test_home_page_uses_item_form(self):
+        '''тест: используется ли на главной странице ItemForm'''
+        response = self.client.get('/')
+        self.assertIsInstance(response.context['form'], ItemForm)
