@@ -13,7 +13,7 @@ def home_page(request):
 def list_new(request):
     '''новый список'''
     list_ = List.objects.create()
-    item = Item.objects.create(text=request.POST.get('item_text'), list=list_)
+    item = Item.objects.create(text=request.POST.get('id_text'), list=list_)
     try:
         item.full_clean()
         item.save()
@@ -30,7 +30,7 @@ def view_list(request, id):
     error = ''
     if request.method == 'POST':
         try:
-            item = Item(text=request.POST['item_text'], list=list_)
+            item = Item(text=request.POST['id_text'], list=list_)
             item.full_clean()
             item.save()
             return redirect(list_)

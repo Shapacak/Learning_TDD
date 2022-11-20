@@ -53,7 +53,7 @@ class FunctionalTest(StaticLiveServerTestCase):
     def input_box(self, text):
         '''вводим текст в поле ввода'''
 
-        inputbox = self.browser.find_element(by=By.ID, value='id_new_item')
+        inputbox = self.browser.find_element(by=By.ID, value='id_text')
         inputbox.send_keys(text)
         inputbox.send_keys(Keys.ENTER)
 
