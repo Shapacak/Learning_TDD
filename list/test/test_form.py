@@ -1,5 +1,6 @@
 from django.test import TestCase
-from list.forms import ItemForm, EMPTY_ITEM_ERROR
+from list.forms import ItemForm
+from list.models import EMPTY_ITEM_ERROR, Item, List
 
 
 class ItemFormTest(TestCase):
@@ -20,10 +21,18 @@ class ItemFormTest(TestCase):
         '''тест: валидация формы для пустых элементов'''
         form = ItemForm(data={'text': ''})
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors['text'],
-                         [EMPTY_ITEM_ERROR])
+        self.assertEqual(form.errors['text'],[EMPTY_ITEM_ERROR])
 
     def test_home_page_uses_item_form(self):
         '''тест: используется ли на главной странице ItemForm'''
         response = self.client.get('/')
         self.assertIsInstance(response.context['form'], ItemForm)
+
+    def test_form_save_handles_saving_to_a_list(self):
+        '''тест: метод save формы обрабатывает сохранение в список'''
+        list_ = List.objects.create()
+        form = ItemForm(data={'text': 'to do'})
+        new_item = form.save(for_list=list_)
+        self.assertEqual(new_item, Item.objects.first())
+        self.assertEqual(new_item.text, 'to do')
+        self.assertEqual(new_item.list, list_)

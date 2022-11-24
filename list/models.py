@@ -2,6 +2,9 @@ from django.db import models
 from django.urls import reverse
 
 
+EMPTY_ITEM_ERROR = 'Вы не можете оставить это поле пустым'
+
+
 class List(models.Model):
     '''список'''
 
@@ -11,5 +14,12 @@ class List(models.Model):
 
 
 class Item(models.Model):
-    text = models.TextField()
+    text = models.TextField(error_messages={'required': EMPTY_ITEM_ERROR})
     list = models.ForeignKey(List, on_delete=models.CASCADE, null=True)
+
+
+    def __str__(self):
+        return self.text
+    class Meta:
+        ordering = ('id',)
+        unique_together = ('list', 'text')

@@ -2,7 +2,8 @@ from django.test import TestCase
 from django.urls import resolve
 from django.http import HttpRequest
 from list.views import home_page
-from list.models import Item, List
+from list.models import Item, List, EMPTY_ITEM_ERROR
+from list.forms import ItemForm
 
 
 class HomePageTest(TestCase):
@@ -21,8 +22,7 @@ class NewListTest(TestCase):
     def test_can_save_a_POST_request(self):
         '''тест: можно сохранить POST-запрос'''
 
-        response = self.client.post('/list/new', data={'id_text': 'A new list item'})
-
+        response = self.client.post('/list/new', data={'text': 'A new list item'})
         self.assertEqual(Item.objects.count(),1)
         new_item = Item.objects.first()
         self.assertEqual(new_item.text, 'A new list item')
@@ -30,7 +30,7 @@ class NewListTest(TestCase):
     def test_redirect_after_POST(self):
         '''тест: переадресация после post-запроса'''
 
-        response = self.client.post('/list/new', data={'id_text': 'A new list item'})
+        response = self.client.post('/list/new', data={'text': 'A new list item'})
         new_list = List.objects.first()
         self.assertRedirects(response, f'/list/{new_list.id}/')
 
@@ -38,23 +38,36 @@ class NewListTest(TestCase):
 class NewItemTest(TestCase):
     '''тест нового элемента'''
 
-    def test_validation_error_are_sent_back_to_home_page_template(self):
+    def test_for_invalid_input_render_home_page_template(self):
         '''тест: ошибки возвращают на главную страницу'''
-        response = self.client.post('/list/new', data={'id_text': ''})
+        response = self.client.post('/list/new', data={'text': ''})
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'home.html')
-        expected_error = 'Сначала введите текст'
-        self.assertContains(response, expected_error)
+
+    def test_validations_errors_shown_on_home_page(self):
+        '''тест: ошибки валидации выводятся на главной странице'''
+        response = self.client.post('/list/new', data={'text': ''})
+        self.assertContains(response, EMPTY_ITEM_ERROR)
+
+    def test_for_invalid_inpud_passes_form_template(self):
+        '''тест: форма передается в шаблон после недопустимого элемента'''
+        response = self.client.post('/list/new', data={'text': ''})
+        self.assertIsInstance(response.context['form'], ItemForm)
 
     def test_invalid_list_item_ared_saved(self):
         '''тест: сохраняются ли недопустимые элементы списка'''
-        self.client.post('/list/new', data={'id_text': ''})
+        self.client.post('/list/new', data={'text': ''})
         self.assertEqual(List.objects.count(), 0)
         self.assertEqual(Item.objects.count(), 0)
 
 
 class ListViewTest(TestCase):
     '''тест представления списка'''
+
+    def post_invalid_input(self):
+        '''отправляет недопустимый ввод'''
+        list_ = List.objects.create()
+        return self.client.post(f'/list/{list_.id}/', data={'text': ''})
 
     def test_uses_list_template(self):
         '''тест: используется шаблон списка'''
@@ -95,7 +108,7 @@ class ListViewTest(TestCase):
         other_list = List.objects.create()
         correct_list = List.objects.create()
 
-        self.client.post(f'/list/{correct_list.id}/', data={'id_text':'A new item'})
+        self.client.post(f'/list/{correct_list.id}/', data={'text': 'A new item'})
 
         self.assertEqual(Item.objects.count(), 1)
         new_item = Item.objects.first()
@@ -108,15 +121,42 @@ class ListViewTest(TestCase):
         other_list = List.objects.create()
         correct_list = List.objects.create()
 
-        response = self.client.post(f'/list/{correct_list.id}/', data={'id_text':'Few item'})
+        response = self.client.post(f'/list/{correct_list.id}/', data={'text':'Few item'})
         self.assertRedirects(response, f'/list/{correct_list.id}/')
 
     def test_validation_errors_end_up_lists_page(self):
         '''тест: ошибки валидации оканчиваются на странице списков'''
 
         list_ = List.objects.create()
-        response = self.client.post(f'/list/{list_.id}/', data={'id_text': ''})
+        response = self.client.post(f'/list/{list_.id}/', data={'text': ''})
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'list.html')
-        error_message = 'Сначала введите текст'
-        self.assertContains(response, error_message)
+        self.assertContains(response, EMPTY_ITEM_ERROR)
+
+    def test_display_item_form(self):
+        '''тест отображения формы'''
+        list_ = List.objects.create()
+        response = self.client.get(f'/list/{list_.id}/')
+        self.assertIsInstance(response.context['form'], ItemForm)
+        self.assertContains(response, 'name="text"')
+
+    def test_for_invalid_input_nothing_saved_to_db(self):
+        '''тест: при недопустимом вводе ничего не сохраняется в бд'''
+        self.post_invalid_input()
+        self.assertEqual(Item.objects.count(), 0)
+
+    def test_for_invalid_inputs_render_list_template(self):
+        '''тест: при недопустимом вводе отображается шаблон списка'''
+        response = self.post_invalid_input()
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'list.html')
+
+    def test_for_invalid_input_passes_form_to_template(self):
+        '''тест: при недопустимом вводе форма передается в шаблон'''
+        response = self.post_invalid_input()
+        self.assertIsInstance(response.context['form'], ItemForm)
+
+    def test_for_invalid_inpurt_shows_error_on_page(self):
+        '''тест: прои недопустимом вводе на экране отображается ошибка'''
+        response = self.post_invalid_input()
+        self.assertContains(response, EMPTY_ITEM_ERROR)
