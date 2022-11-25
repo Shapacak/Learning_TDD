@@ -3,6 +3,7 @@ from django.urls import reverse
 
 
 EMPTY_ITEM_ERROR = 'Вы не можете оставить это поле пустым'
+DUPLICATE_ITEM_ERROR = 'Этот элемент уже есть в списке'
 
 
 class List(models.Model):
@@ -14,7 +15,7 @@ class List(models.Model):
 
 
 class Item(models.Model):
-    text = models.TextField(error_messages={'required': EMPTY_ITEM_ERROR})
+    text = models.TextField(error_messages={'required': EMPTY_ITEM_ERROR, 'unique': DUPLICATE_ITEM_ERROR})
     list = models.ForeignKey(List, on_delete=models.CASCADE, null=True)
 
 

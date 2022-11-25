@@ -4,6 +4,7 @@ from django.http import HttpRequest
 from list.views import home_page
 from list.models import Item, List, EMPTY_ITEM_ERROR
 from list.forms import ItemForm
+from unittest import skip
 
 
 class HomePageTest(TestCase):
@@ -156,7 +157,18 @@ class ListViewTest(TestCase):
         response = self.post_invalid_input()
         self.assertIsInstance(response.context['form'], ItemForm)
 
-    def test_for_invalid_inpurt_shows_error_on_page(self):
+    def test_for_invalid_input_shows_error_on_page(self):
         '''тест: прои недопустимом вводе на экране отображается ошибка'''
         response = self.post_invalid_input()
         self.assertContains(response, EMPTY_ITEM_ERROR)
+
+    @skip
+    def test_duplicate_item_validation_errors_end_on_lists_page(self):
+        '''тест: ошибки валидации дупликатов заканчиваются на странице списков'''
+        list_ = List.objects.create()
+        item1 = Item.objects.create(list=list_, text='some text')
+        response = self.client.post(f'/list/{list_.id}/', data={'text': 'some text'})
+        expected_error = 'Данный элемент уже есть в списке'
+        self.assertContains(response, expected_error)
+        self.assertTemplateUsed(response, 'list.html')
+        self.assertEqual(Item.objects.count(), 1)
