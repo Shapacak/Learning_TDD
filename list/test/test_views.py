@@ -2,8 +2,8 @@ from django.test import TestCase
 from django.urls import resolve
 from django.http import HttpRequest
 from list.views import home_page
-from list.models import Item, List, EMPTY_ITEM_ERROR
-from list.forms import ItemForm
+from list.models import Item, List, EMPTY_ITEM_ERROR, DUPLICATE_ITEM_ERROR
+from list.forms import ItemForm, ExistingListItemForm
 from unittest import skip
 
 
@@ -138,7 +138,7 @@ class ListViewTest(TestCase):
         '''тест отображения формы'''
         list_ = List.objects.create()
         response = self.client.get(f'/list/{list_.id}/')
-        self.assertIsInstance(response.context['form'], ItemForm)
+        self.assertIsInstance(response.context['form'], ExistingListItemForm)
         self.assertContains(response, 'name="text"')
 
     def test_for_invalid_input_nothing_saved_to_db(self):
@@ -155,20 +155,18 @@ class ListViewTest(TestCase):
     def test_for_invalid_input_passes_form_to_template(self):
         '''тест: при недопустимом вводе форма передается в шаблон'''
         response = self.post_invalid_input()
-        self.assertIsInstance(response.context['form'], ItemForm)
+        self.assertIsInstance(response.context['form'], ExistingListItemForm)
 
     def test_for_invalid_input_shows_error_on_page(self):
         '''тест: прои недопустимом вводе на экране отображается ошибка'''
         response = self.post_invalid_input()
         self.assertContains(response, EMPTY_ITEM_ERROR)
 
-    @skip
     def test_duplicate_item_validation_errors_end_on_lists_page(self):
         '''тест: ошибки валидации дупликатов заканчиваются на странице списков'''
         list_ = List.objects.create()
         item1 = Item.objects.create(list=list_, text='some text')
         response = self.client.post(f'/list/{list_.id}/', data={'text': 'some text'})
-        expected_error = 'Данный элемент уже есть в списке'
-        self.assertContains(response, expected_error)
+        self.assertContains(response, DUPLICATE_ITEM_ERROR)
         self.assertTemplateUsed(response, 'list.html')
         self.assertEqual(Item.objects.count(), 1)

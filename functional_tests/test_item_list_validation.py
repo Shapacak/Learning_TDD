@@ -1,3 +1,5 @@
+import time
+
 from .base import FunctionalTest
 from unittest import skip
 from selenium.webdriver.common.by import By
@@ -5,6 +7,9 @@ from selenium.webdriver.common.by import By
 
 class ItemValidationTest(FunctionalTest):
     '''Тест на проверку элемента списка'''
+
+    def get_error_element(self):
+        return self.browser.find_element(by=By.CSS_SELECTOR, value='.has-error')
 
     def test_add_empty_list_item(self):
         '''тест: нельзя отправить пустой элемент'''
@@ -34,8 +39,22 @@ class ItemValidationTest(FunctionalTest):
         # Пытаюсь снова ввести "Купить молока"
         self.input_box('Купить молока')
         # И вижу предупреждение что нельзя добавлять дупликаты
-        self.wait_for(lambda: self.assertEqual(self.browser.find_element(by=By.CSS_SELECTOR, value='p.has_error').text,
-                                               'Это уже есть в списке'))
+        self.wait_for(lambda: self.assertEqual(self.get_error_element().text,
+                                               'Этот элемент уже есть в списке'))
+
+    def test_error_messages_are_cleared_on_input(self):
+        '''тест: сообщения об ошибках исчезают при вводе'''
+        # Я захожу на сайт и специально вызываю ошибку валидации
+        self.browser.get(self.live_server_url)
+        self.input_box('Ауф')
+        self.wait_for_row_in_list_table('1: Ауф')
+        self.input_box('Ауф')
+        # Вижу что это вызывает ошибку дубликата
+        self.wait_for(lambda : self.assertTrue(self.get_error_element().is_displayed()))
+        # И когда я ввожу текст она пропадает
+        inputbox = self.browser.find_element(by=By.NAME, value='text')
+        inputbox.send_keys('text')
+        self.wait_for(lambda: self.assertFalse(self.get_error_element().is_displayed()))
 
 
 
