@@ -10,10 +10,10 @@ def deploy(folder):
     '''развернуть'''
     site_folder = f'/home/{env.user}/sites/{folder}'
     source_folder = site_folder + '/source'
-    _create_directory_structure_if_necessary(site_folder)
-    _get_latest_source(source_folder)
+    #_create_directory_structure_if_necessary(site_folder)
+    #_get_latest_source(source_folder)
     _update_settings(site_folder, source_folder, env.host)
-    _update_venv(site_folder)
+    #_update_venv(site_folder)
     _update_static_files(source_folder)
     _update_database(source_folder)
 
@@ -37,13 +37,13 @@ def _get_latest_source(source_folder):
 def _update_settings(site_folder, source_folder, site_name):
     '''обновление настроек django'''
     settings_path = source_folder + '/superlist/settings.py'
-    sed(settings_path, 'DEBUG = True', 'DEBUG = False')
+    #sed(settings_path, 'DEBUG = True', 'DEBUG = False')
+    #sed(settings_path,
+    #    'ALLOWED_HOSTS =.+$',
+    #    f'ALLOWED_HOSTS = ["{site_name}"]')
+    sed(settings_path, "STATIC_URL = '.+?'", f"STATIC_URL = ''/home/shap/superlist/static/'")
     sed(settings_path,
-        'ALLOWED_HOSTS =.+$',
-        f'ALLOWED_HOSTS = ["{site_name}"]')
-    sed(settings_path, "STATIC_URL = '.+$'", f'STATIC_URL = {os.path.join(site_folder,"static")}')
-    sed(settings_path,
-        'SECRET_KEY =.+$', 'from .secret_key import SECRET_KEY')
+        'SECRET_KEY =.+?', 'from .secret_key import SECRET_KEY')
     secret_key_file = source_folder + '/superlist/secret_key.py'
     chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
     key = ''.join(random.SystemRandom().choice(chars) for _ in range(50))
