@@ -18,11 +18,9 @@ from django.contrib import admin
 from django.urls import path
 from list import views as list_views
 from list import urls as list_urls
-from accounts import urls as accounts_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', list_views.home_page),
     path('list/', include(list_urls)),
-    path('accounts/', include(accounts_urls)),
 ]

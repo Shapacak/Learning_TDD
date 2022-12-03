@@ -37,7 +37,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'list',
-    'accounts',
 ]
 
 MIDDLEWARE = [
@@ -100,10 +99,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTH_USER_MODEL = 'accounts.ListUser'
-
-AUTHENTICATION_BACKENDS = [
-    'accounts.authentication.PasswordlessAuthenticationBackend',]
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
