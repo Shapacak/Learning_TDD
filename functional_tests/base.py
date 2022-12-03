@@ -1,5 +1,5 @@
 import os
-from config import config
+#from config import config
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
@@ -56,4 +56,5 @@ class FunctionalTest(StaticLiveServerTestCase):
         inputbox = self.browser.find_element(by=By.NAME, value='text')
         inputbox.send_keys(text)
         inputbox.send_keys(Keys.ENTER)
+
 
