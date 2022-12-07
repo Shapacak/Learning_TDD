@@ -27,7 +27,6 @@ class ItemValidationTest(FunctionalTest):
         self.input_box('')
         self.wait_for(lambda: self.browser.find_element(by=By.CSS_SELECTOR, value='#id_text:invalid'))
         # Это можно исправить введя в поле некий текст
-        self.fail('Введи меня')
 
     def test_cannot_add_duplicate_items(self):
         '''тест: нельзя добавлять дублирующие элементы'''

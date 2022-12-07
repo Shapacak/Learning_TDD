@@ -6,7 +6,7 @@ from .base import FunctionalTest
 
 
 TEST_EMAIL = 'example@mail.com'
-SUBJECT = 'Your login link for Superlist'
+SUBJECT = 'Your login link for Superlists'
 
 
 class LoginTest(FunctionalTest):
@@ -21,7 +21,7 @@ class LoginTest(FunctionalTest):
         self.browser.find_element(by=By.NAME, value='email').send_keys(Keys.ENTER)
 
         # Появляется сообщение что письмо было выслано на мою электронную почту
-        self.wait_for(lambda : self.assertIn('Письмо отправлено',
+        self.wait_for(lambda : self.assertIn('Проверьте свою почту, мы отправили Вам ссылку для входа на сайт',
                                              self.browser.find_element(by=By.TAG_NAME, value='body').text))
 
         # Я проверяю свою почту и нахожу там письмо
@@ -30,7 +30,7 @@ class LoginTest(FunctionalTest):
         self.assertEqual(email.subject, SUBJECT)
 
         # Оно содержит ссылку на url адресс
-        self.assertIn('Проверьте свою электронную почту, там вы найдете сообщение с сылкой для входа на сайт',
+        self.assertIn('Проверьте свою почту, мы отправили Вам ссылку для входа на сайт',
                       self.browser.find_element(by=By.TAG_NAME, value='body').text)
         url_search = re.search(r'http://.+/.+$', email.body)
         if not url_search:
@@ -45,3 +45,13 @@ class LoginTest(FunctionalTest):
         self.wait_for(lambda : self.browser.find_element(by=By.LINK_TEXT,value='Log out'))
         navbar = self.browser.find_element(by=By.CSS_SELECTOR, value='.navbar')
         self.assertIn(TEST_EMAIL, navbar.text)
+
+        # Теперь я хочу выйти из системы
+        self.browser.find_element(by=By.LINK_TEXT, value='Log out').click()
+
+        # И я вышел из системы
+        self.wait_for(lambda :self.browser.find_element(by=By.NAME, value='email'))
+        navbar = self.browser.find_element(by=By.CSS_SELECTOR, value='.navbar')
+        self.assertNotIn(TEST_EMAIL, navbar.text)
+        self.assertIn('Вы вышли из системы',
+                      self.browser.find_element(by=By.TAG_NAME, value='body').text)
