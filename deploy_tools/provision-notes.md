@@ -11,7 +11,7 @@
     sudo apt-get install nginx git python3.10 python3.10-venv
 ## Конфигурация путей в settings.py
 * BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-* STATIC_URL = '/home/shap/superlist/static/'
+* STATIC_URL = '/home/shap/sites/superlist/static/'
 * STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 ## Конфигурация нового узла Nginx

@@ -26,6 +26,7 @@ class LoginTest(FunctionalTest):
         start = time.time()
         inbox = poplib.POP3_SSL('pop.gmail.com')
         try:
+            set_gmail_password()
             inbox.user(test_email)
             inbox.pass_(os.environ['GMAIL_PASSWORD'])
             while time.time() - start < 60:
@@ -34,7 +35,6 @@ class LoginTest(FunctionalTest):
                     print('getting msg', i)
                     _, lines, __ = inbox.retr(i)
                     lines = [l.decode('utf-8') for l in lines]
-                    print(lines)
                     if f'Subject: {subject}' in lines:
                         email_id = i
                         body = '\n'.join(lines)
@@ -66,7 +66,7 @@ class LoginTest(FunctionalTest):
         body = self.wait_for_email(TEST_EMAIL, SUBJECT)
 
         # Оно содержит ссылку на url адресс
-        self.assertIn('Проверьте свою почту, мы отправили Вам ссылку для входа на сайт',body)
+        self.assertIn('Use this link to login', body)
         url_search = re.search(r'http://.+/.+$', body)
         if not url_search:
             self.fail(f'not found url in {body}')
